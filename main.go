@@ -16,5 +16,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("starting crawl of: %s\n", args[0])
+	rawURL := args[0]
+	fmt.Printf("starting crawl of: %s\n", rawURL)
+
+	respHTML, err := getHTML(rawURL)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(respHTML)
 }
