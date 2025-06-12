@@ -11,6 +11,10 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	cfg.concurrencyControl <- struct{}{}
 	defer func (){<-cfg.concurrencyControl}()
 
+	if cfg.maxPagesReached() {
+		return
+	}
+
 	currentU, err := url.Parse(rawCurrentURL)
 	if err != nil {
 		fmt.Printf("error parsing raw current URL: %v", err)
@@ -30,7 +34,7 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 		return
 	}
 
-	// fmt.Printf("Crawling new page: %s\n", currentURL)
+	fmt.Printf("Crawling new page: %s\n", currentURL)
 	html, err := getHTML(rawCurrentURL)
 	if err != nil {
 		fmt.Printf("error getting HTML from current URL: %v", err)
@@ -56,4 +60,10 @@ func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
 	}
 	cfg.pages[normalizedURL] = 1
 	return true
+}
+
+func (cfg *config) maxPagesReached() bool {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+	return len(cfg.pages) >= cfg.maxPages
 }
